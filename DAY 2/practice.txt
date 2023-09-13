@@ -1,0 +1,74 @@
+16:57 12-09-2023
+
+CREATE TABLE ecommerce.employee (
+    emp_id 	INT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1),
+    birthdate DATE,
+    hiredate DATE,
+    check(gender in ('F','M')),
+    CONSTRAINT birthdate_hiredate_check check(hiredate > birthdate),
+	
+);
+
+
+alter table ecommerce.employee
+	add constraint unique_name
+	 unique(first_name, last_name);
+	 
+	 
+	 alter table ecommerce.employee add column email VARCHAR(50)
+	 
+	 alter table ecommerce.employee
+	add constraint unique_emp_email
+	 unique(email);
+
+//INSERTING RECORDS
+INSERT INTO ecommerce.employee(
+	emp_id, first_name, last_name, gender, birthdate, hiredate, email)
+	VALUES (10001,'Georgi','Facello','M','1953-09-02','1986-06-26', 'aaa');
+	
+	
+	INSERT INTO ecommerce.employee VALUES 
+(10002,'Bezalel','Simmel','F','1964-06-02','1985-11-21', 'sss'),
+(10003,'Parto','Bamford','M','1959-12-03','1986-08-28','ddd');
+
+
+
+//QUERYING DATA
+
+SELECT first_name,last_name
+	FROM ecommerce.employee 
+		where birthdate > '1950-01-01' and birthdate < '1960-01-01'
+		and first_name like '%o'
+
+COMPARISON OPERATORS - <, >, <=, >= , =
+
+	
+WHERE COLUMNNAME  LIKE {PATTERN}
+
+'g%' - STARTING CHAR
+'%O' - ENDING CHAR
+
+
+SELECT first_name,last_name
+	FROM ecommerce.employee 
+			where first_name like '%el%'
+
+'%el% - contains the first_name which has 'el' 
+
+
+select <column_name> from <table_name> where <condition>
+	order by <column_name> asc or desc
+	group by <colum_name>
+	having <column_name>
+
+
+//Recently joined
+select * from  ecommerce.employee
+	 where hiredate in (select max(hiredate) from ecommerce.employee)
+	 
+//Oldest employee
+select * from  ecommerce.employee
+	 where birthdate in (select min(birthdate) from ecommerce.employee)

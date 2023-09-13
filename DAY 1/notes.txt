@@ -1,0 +1,24 @@
+12 - shoe size 
+25 - age
+11/09/2023 - start date 
+
+Database - Information Management System
+
+local, network, cloud 
+
+SQL - Oracle, MySQL, PostGresQL, SQL Server, Access (local/network)
+NoSQL -  Mongodb, (local/network)
+
+Cloud db -> Firebase , Dynamodb AWS, (NoSQL arch)
+
+Postgres Naming convention - start letter(a-z or A - Z or _ ) - column names, tables names - letters 
+		primary key - pk_<table_name> - pk_empId 
+		foreign key - fk_<table_name>_<column_name> fk_customer_customerId
+		index - index_<table_name>
+		Unique constraint 
+		check constraint - 
+
+BCN - Boyys Codd Normalization
+4th Normalization
+5th Normalization
+		

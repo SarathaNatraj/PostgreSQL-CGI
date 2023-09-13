@@ -1,0 +1,10 @@
+dd-MM-yyyy
+
+yyyy-MM-dd - default date format
+
+
+bytea - supports hexa decimal, ESCAPE SEQ, 
+
+'\xDEAABF'
+
+'\000'
