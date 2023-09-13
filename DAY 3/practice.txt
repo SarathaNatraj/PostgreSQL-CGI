@@ -1,56 +1,145 @@
-do $$ 
-declare
-   counter    integer := 1;
-   first_name varchar(50) := 'John';
-   last_name  varchar(50) := 'Doe';
-   payment    numeric(11,2) := 20.5;
-begin 
-   raise notice '% % % has been paid % USD', 
-       counter, 
-	   first_name, 
-	   last_name, 
-	   payment;
-end $$;
-
-//NOTICE:  1 John Doe has been paid 20.50 USD
+create table logins(
+  id serial unique,
+  user_id bigint not null,
+  provider varchar(50) not null default 'local',
+  provider_key varchar(255),
+  provider_token varchar(255) not null
+);
 
 
-do $$ 
-declare
-   created_at time := now();
-begin 
-   raise notice '%', created_at;
-   perform pg_sleep(10);
-   raise notice '%', created_at;
-end $$;
+create function add_login(
+    em varchar(255),
+    key varchar(50),
+    token varchar(255),
+    new_provider varchar(50)
+)
+returns TABLE(
+  message varchar(255),
+  success boolean
+) as
+$$
+DECLARE
+  success boolean :=false;
+  message varchar(255) := 'User not found with this email';
+  found_id bigint;
+  data_result json;
+BEGIN
+  set search_path = membership;
+  select id into found_id from users where email = em;
 
-//NOTICE:  12:41:15.431181
-//NOTICE:  12:41:15.431181
+  if found_id is not null then
+    --replace the provider for this user completely
+    delete from logins where 
+      found_id = logins.user_id AND 
+      logins.provider = new_provider;
+
+    --add the login
+    insert into logins(user_id,provider_key, provider_token, provider)
+    values (found_id, key,token,new_provider);
+
+    --add log entry
+    insert into logs(subject,entry,user_id, created_at)
+    values('Authentication','Added ' || new_provider || ' login',found_id,now());
+
+    success := true;
+    message :=  'Added login successfully';
+  end if;
+
+  return query
+  select message, success;
+
+END;
+$$
+language plpgsql;
 
 
 
-do $$ 
-<<outer_block>>
-declare
-  counter integer := 0;
-begin
-   counter := counter + 1;
-   raise notice 'The current value of the counter is %', counter;
 
-   declare
-       counter integer := 0;
-   begin
-       counter := counter + 10;
-       raise notice 'Counter in the subblock is %', counter;
-       raise notice 'Counter in the outer block is %', outer_block.counter;
-   end;
+CREATE OR REPLACE FUNCTION increment(i INT) RETURNS INT AS $$
+    BEGIN
+      RETURN i + 1;
+    END;
+    $$ LANGUAGE plpgsql;
+ 
+    -- An example how to use the function (Returns: 11)
+    SELECT increment(10);
 
-   raise notice 'Counter in the outer block is %', counter;
-   
-end outer_block $$;
+Create or replace function myMultiplication(var1 integer, var2 integer)
+ returns integer as $$
+BEGIN
+     return var1*var2;
+END;
+$$ language plpgsql;
 
 
-//NOTICE:  The current value of the counter is 1
-//NOTICE:  Counter in the subblock is 10
-//NOTICE:  Counter in the outer block is 1
-//NOTICE:  Counter in the outer block is 1
+SELECT myMultiplication(10,10);
+
+
+---returns void
+CREATE OR REPLACE FUNCTION add_city(city VARCHAR(70), state CHAR(2)) 
+    RETURNS void AS $$
+    BEGIN
+      INSERT INTO cities VALUES (city, state);
+    END;
+    $$ LANGUAGE plpgsql;
+SELECT add_city('St.Louis', 'MO');
+
+
+CREATE OR REPLACE FUNCTION show_cities() RETURNS refcursor AS $$
+    DECLARE
+      ref refcursor;
+    BEGIN
+      OPEN ref FOR SELECT city, state FROM cities;
+      RETURN ref;
+    END;
+    $$ LANGUAGE plpgsql;
+	
+	select show_cities()
+
+DO $$
+DECLARE emp_counter INTEGER;
+BEGIN
+SELECT COUNT(*)
+INTO emp_counter 
+FROM emp;
+RAISE NOTICE 'Total Employees: %', emp_counter;
+END;
+$$
+
+
+
+Create or replace function 
+myTest(var1 integer) returns integer as  $$
+DECLARE
+    i integer;
+BEGIN
+    i:=1;
+    loop
+      exit when i>var1;
+      i=i+1;
+	  raise notice 'num is %',i;
+     continue when i<20;
+     raise notice 'num is %',i;
+   end loop;
+   return i*var1;
+END
+$$ language plpgsql;
+
+select myTest(30)
+
+
+Create or replace function 
+errors(val integer, val1 integer) returns real as $$
+Declare
+   val2 real;
+BEGIN
+   val2:=val/val1;
+   return val2;
+Exception
+   when division_by_zero then
+   raise notice 'caught a zero division';
+   return 0;
+End;
+$$ LANGUAGE plpgsql;
+
+select errors(50,5)
